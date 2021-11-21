@@ -1,5 +1,5 @@
 # Armachat-circuitpython
-New armachat based on Raspberry Pi PICO an Circuitpython code
+New Armachat based on Raspberry Pi PICO an Circuitpython code
 
 **Software working features:**
 
