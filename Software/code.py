@@ -21,12 +21,35 @@ from adafruit_display_text import label
 from adafruit_st7789 import ST7789
 from config import config
 import digitalio
-from picomputer import picomputer
 #import adafruit_rfm9x
 import ulora
 
 messages = ['1|2|3|4|5|6|7|8|a1|a2|a3|a4|a5|a6|a7|a8']
 msgCounter = 0x00
+
+def beep():
+	audioPin = PWMOut(board.GP0, duty_cycle=0, frequency=440, variable_frequency=True)
+	audioPin.frequency = 5000
+	audioPin.duty_cycle = 1000*(config.volume)
+	time.sleep(0.002)
+	audioPin.duty_cycle = 0
+	audioPin.deinit()
+
+
+def ring():
+	audioPin = PWMOut(board.GP0, duty_cycle=0, frequency=440, variable_frequency=True)
+	audioPin.frequency = 2000
+	audioPin.duty_cycle = 1000*(config.volume)
+	time.sleep(0.1)
+	audioPin.frequency = 3000
+	audioPin.duty_cycle = 1000*(config.volume)
+	time.sleep(0.1)
+	audioPin.frequency = 6000
+	audioPin.duty_cycle = 1000*(config.volume)
+	time.sleep(0.1)
+	audioPin.duty_cycle = 0
+	audioPin.deinit()
+
 
 def get_VSYSvoltage():
 	VSYSin = ((VSYS_voltage.value * 3.3) / 65536) * 3
@@ -40,7 +63,18 @@ def countMessages(msgStat=""):
 			c=c+1
 			#print(messages[i])
 	return c
-			
+
+def changeMessageStatus(msgID="", old="", new=""):
+	allMsg = len(messages)
+	c=0
+	print(msgID)
+	for i in range (allMsg):
+		if messages[i].count(msgID)>0:
+			print("Change status for message:"+msgID)
+			messages[i] = messages[i].replace(old,new)
+			c=c+1
+	return c
+
 
 def clearScreen(stat=""):
 	for i in range (8) :
@@ -49,18 +83,18 @@ def clearScreen(stat=""):
 def showMemory():
 	msg = 0
 	clearScreen()
-	picomputer.ring()
+	ring()
 	screen.show()
 	while True:
 		keys = keypad.pressed_keys
 		if keys:
-			picomputer.beep()
+			beep()
 			if keys[0]=="lt":
 				if msg>0 :msg=msg-1
 			if keys[0]=="rt":
 				if msg<(len(messages)-1) :msg=msg+1
 			if keys[0]=="tab":
-				picomputer.beep()
+				beep()
 				return 1
 			#for f in messages[message]
 			clearScreen()
@@ -68,6 +102,10 @@ def showMemory():
 			mem = messages[msg]
 			oneItm = mem.split("|")
 			line=1
+			if messages[msg].count("|N|")>0:
+				print("Mesage mark as read:"+str(msg))
+				messages[msg] = messages[msg].replace("|N|","|R|")
+				ring()
 			#( destination+'|'+sender+'|'+messageID+'|'+hop+'|R|'+rssi+'|'+snr+'|'+timeStamp+'|'+packet_text,'utf-8')
 			if keys[0]=="ent":
 				screen[1].text ="Status:"+oneItm[4]
@@ -123,16 +161,21 @@ def receiveMessage ():
 	header = [0, 0, 0, 0, #destination
 			  0, 0, 0, 0, #sender
 			  0, 0, 0, 0, #messageID
-			  0, 0, 0, 0] #Hop limit
-
+			  0, 0, 0, 3] #Hop limit
 # If no packet was received during the timeout then None is returned.
-#editText=(editText[0:cursor-1])+(editText[cursor:])
+
 	if packet is not None:
-		# Decrypt
-		cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
 		header = packet[0:16]
 		print("Received header:")
 		print(hexlify(header))
+		if packet[16]==33: #33 = sybol ! it is delivery confirmation
+			print("Delivery comfirmation")
+			changeMessageStatus(msgID=str(hexlify(packet[8:12]),'utf-8'), old="|S|", new="|D|")
+			#do something to mark message is delivered
+			packet_text = "D"
+			return packet_text
+		# Decrypt
+		cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
 		inp = bytes(packet[16:])
 		outp = bytearray(len(inp))
 		cipher.encrypt_into(inp, outp)
@@ -163,6 +206,16 @@ def receiveMessage ():
 		
 		print (storedMsg)
 		messages.append(storedMsg)
+		
+		#confirmation
+		LED.value = True
+		#Create response header = swap destination<>sender + same message ID
+		header = packet[4:8]+packet[0:4]+packet[8:12]+packet[12:16]
+		print("Response header ...")
+		print (hexlify(header))
+		rfm9x.send(list(bytearray(header+"!")), 0) #(list(outp), 0)
+		print("Comfirmation send ...")
+		LED.value = False
 	return packet_text
 
 
@@ -187,24 +240,24 @@ def setup():
 	screen[6].text = ""
 	screen[7].text = ""
 	screen[8].text = ""
-	picomputer.ring()
+	ring()
 	screen.show()
 	while True:
 		keys = keypad.pressed_keys
 		if keys:
-			picomputer.beep()
+			beep()
 			if keys[0]=="lt":
 				if menu>0 :menu=menu-1
 			if keys[0]=="rt":
 				if menu<3 :menu=menu+1
 			if keys[0]=="tab":
-				picomputer.beep()
+				beep()
 				return 1
 			if menu==0:
 				if keys[0]=="s":
 					config.spread=valueUp(7,12,config.spread)
 				screen[0].text = "{:.d} Radio:".format(menu)
-				screen[1].text = "[F] Frequency: 915MHz"
+				screen[1].text = "[F] Frequency: {:5.2f}MHz".format(config.freq)
 				screen[2].text = "[S] Spread {:.d}".format(config.spread)
 				screen[3].text = "[P] Power {:.d}".format(config.power)
 				screen[4].text = "[S] Bandwidth {:.d}".format(config.bandwidth)
@@ -238,9 +291,12 @@ def setup():
 				screen[8].text = "Ready ..."
 				screen.show()
 			elif menu==3:
+				if keys[0]=="v":
+					config.volume=valueUp(0,6,config.volume)
+					ring()
 				screen[0].text = "{:.d} Sound:".format(menu)
 				screen[1].text = "[V] Volume {}".format(config.volume)
-				screen[2].text = "[S] Silent"
+				screen[2].text = ""
 				screen[3].text = "[T] Tone"
 				screen[4].text = "[M] Melody"
 				screen[5].text = ""
@@ -290,7 +346,7 @@ def editor(text):
 		if keys:
 			if keys[0]=="alt":
 				layout=layout+1
-				picomputer.ring()
+				ring()
 				if layout==3:
 					layout=0
 				keys[0]=""
@@ -324,7 +380,7 @@ def editor(text):
 				cursor=0
 				keys[0]=""
 			if keys[0]=="ent":
-				picomputer.beep()
+				beep()
 				for r in range (7) :
 					text=text+line[r]+'|'
 				return text
@@ -350,7 +406,9 @@ def editor(text):
 #    f.write(b'abcdefg')
 #    f.close()
 
-LED = digitalio.DigitalInOut(board.GP25)
+
+
+LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
 VSYS_voltage = analogio.AnalogIn(board.VOLTAGE_MONITOR)
 
@@ -401,9 +459,13 @@ CS = digitalio.DigitalInOut(board.GP13)
 RESET = digitalio.DigitalInOut(board.GP17)
 spi = busio.SPI(board.GP10, MOSI=board.GP11, MISO=board.GP12)
 # Initialze radio
-RADIO_FREQ_MHZ = 868.0 #869.45  # Frequency of the radio in Mhz. Must match your
+
+
+
+RADIO_FREQ_MHZ = config.freq #869.45  # Frequency of the radio in Mhz. Must match your
 print('starting Lora')
-#rfm9x = ulora.LoRa()#modem_config=ulora.ModemConfig.Bw31_25Cr48Sf512) #RFM95_SPIBUS, RFM95_INT, SERVER_ADDRESS, RFM95_CS, reset_pin=RFM95_RST, freq=RF95_FREQ, tx_power=RF95_POW, acks=True)
+
+#Bw125Cr48Sf4096 = (0x78, 0xc4, 0x0c) #/< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
 try:
 	rfm9x = ulora.LoRa(spi, CS, modem_config=ulora.ModemConfig.Bw125Cr48Sf4096,tx_power=23) #, interrupt=28
 except:
@@ -434,7 +496,7 @@ while True:
 	screen[7].text = "[T] Terminal [S] Setup"
 	screen[8].text = "Ready ..."
 	screen.show()
-	picomputer.beep()
+	beep()
 	keypad = adafruit_matrixkeypad.Matrix_Keypad(config.rows, config.cols, config.keys1)
 	
 	sleepStart_time = time.monotonic() # fraction seconds uptime
@@ -449,37 +511,36 @@ while True:
 			#alarm.alarm.light_sleep_until_alarms(time_alarm)
 		
 		keys = keypad.pressed_keys
-		#picomputer.beep()
+		#beep()
 		#main LOOP
 		message = receiveMessage()
 		if not message=="" :
-			picomputer.ring()
-			picomputer.ring()
-			picomputer.ring()
-			picomputer.ring()
+			ring()
+			ring()
 		if keys:
 			#BACKLIGHT.duty_cycle = 65535
 			break
 	if not keys:
 		continue
 	if keys[0]=='n':
-		picomputer.ring()
+		ring()
 		text=editor (text="")
 		config.msgID3=random.randint(0, 255)
 		config.msgID2=random.randint(0, 255)
 		config.msgID1=random.randint(0, 255)
 		config.msgID0=msgCounter #messageID
 		sendMessage(text)
+		message = receiveMessage()
 		msgCounter +=1
 	if keys[0]=='m':
 		showMemory()
-		picomputer.ring()
+		ring()
 	if keys[0]=='a':
 		SMPSmode.value=True		
 	if keys[0]=='b':
 		SMPSmode.value=False			
 	if keys[0]=='e':
-		picomputer.ring()
+		ring()
 		countMessages()
 	if keys[0]=='i':
 		screen[0].text = "System info:"
@@ -495,17 +556,17 @@ while True:
 		screen[6].text = "-"
 		screen[7].text = "-"
 		screen[8].text = "Ready ..."
-		picomputer.ring()
+		ring()
 		keys = keypad.pressed_keys
 		while not keys:
 			keys = keypad.pressed_keys
 
 	if keys[0]=='s':
-		picomputer.ring()
+		ring()
 		setup()	
 	if keys[0]=='t':
 		screen.show_terminal()
-		picomputer.ring()
+		ring()
 		keys = keypad.pressed_keys
 		while not keys:
 			keys = keypad.pressed_keys
