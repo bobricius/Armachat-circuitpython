@@ -18,15 +18,18 @@ from adafruit_st7789 import ST7789
 LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
 
-safeGND = digitalio.DigitalInOut(board.GP7)
+safeGND = digitalio.DigitalInOut(board.GP14)
 safeGND.direction = digitalio.Direction.OUTPUT
 safeGND.value = False
 
 VBUS_status = digitalio.DigitalInOut(board.VBUS_SENSE) # defaults to input
 VBUS_status.pull = digitalio.Pull.UP # turn on internal pull-up resistor
 
-safe = digitalio.DigitalInOut(board.GP14)  # <-- choose your button pin
+safe = digitalio.DigitalInOut(board.GP7)  # <-- choose your button pin
 safe.pull = digitalio.Pull.UP
+
+wrp = digitalio.DigitalInOut(board.GP22)  # <-- choose your button pin
+wrp.pull = digitalio.Pull.UP
 
 # Release any resources currently in use for the displays
 displayio.release_displays()
@@ -57,8 +60,10 @@ if VBUS_status.value :
 	print("USB power connected")
 else:
 	print ("No USB power")
+writemode=True
 
-print ("Press ESC for SAFE MODE:")
+print ("Press ESC for SAFE MODE")
+print ("Press ALT for WRITE from code")
 LED.value = False
 for x in range(16):
 	LED.value = not LED.value  # toggle LED on/off as notice
@@ -67,13 +72,15 @@ for x in range(16):
 		print ("SAFE MODE DETECTED .....")
 		microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
 		microcontroller.reset()
-
+	if wrp.value is False:
+		print ("Write mode enabled .....")
+		writemode=False
 # RENAME DRIVE
 new_name = "ARMACHAT"
 
 storage.remount("/", readonly=False)
 m = storage.getmount("/")
 m.label = new_name
-storage.remount("/", readonly=True)
+storage.remount("/", readonly=writemode)
 
 print ("Starting code.py...")

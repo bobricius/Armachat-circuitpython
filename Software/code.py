@@ -26,6 +26,14 @@ import ulora
 
 messages = ['1|2|3|4|5|6|7|8|a1|a2|a3|a4|a5|a6|a7|a8']
 msgCounter = 0x00
+message=""
+
+def readKeyboard():
+	message = receiveMessage()
+	if not message=="" :
+		ring()
+		ring()
+	return keypad.pressed_keys
 
 def beep():
 	audioPin = PWMOut(board.GP0, duty_cycle=0, frequency=440, variable_frequency=True)
@@ -89,14 +97,32 @@ def showMemory():
 		keys = keypad.pressed_keys
 		if keys:
 			beep()
-			if keys[0]=="lt":
+			if keys[0]=="lt" or keys[0]=="bsp":
 				if msg>0 :msg=msg-1
-			if keys[0]=="rt":
+			if keys[0]=="rt" or keys[0]=="ent":
 				if msg<(len(messages)-1) :msg=msg+1
-			if keys[0]=="tab":
+			if keys[0]=="tab" or keys[0]=="alt":
 				beep()
 				return 1
-			#for f in messages[message]
+			if keys[0]=="s":
+				beep()
+				with open('messages.txt', 'a') as f:
+					for line in messages:
+						print(line)
+						f.write(line+'\n')
+				#f.close()
+			if keys[0]=="r":
+				beep()
+				messages.clear()
+				with open('messages.txt', 'r') as f:
+					msgf = f.readlines()
+					print("Reading messages:")
+					for line in msgf:
+						print(line)
+						messages.append(line)
+				#f.close()
+
+#for f in messages[message]
 			clearScreen()
 			screen[0].text = "Message:"+str(msg)
 			mem = messages[msg]
@@ -107,7 +133,7 @@ def showMemory():
 				messages[msg] = messages[msg].replace("|N|","|R|")
 				ring()
 			#( destination+'|'+sender+'|'+messageID+'|'+hop+'|R|'+rssi+'|'+snr+'|'+timeStamp+'|'+packet_text,'utf-8')
-			if keys[0]=="ent":
+			if keys[0]==" ":
 				screen[1].text ="Status:"+oneItm[4]
 				screen[2].text ="To:"+oneItm[0]
 				screen[3].text ="From:"+oneItm[1]
@@ -246,11 +272,11 @@ def setup():
 		keys = keypad.pressed_keys
 		if keys:
 			beep()
-			if keys[0]=="lt":
+			if keys[0]=="lt" or keys[0]=="bsp":
 				if menu>0 :menu=menu-1
-			if keys[0]=="rt":
+			if keys[0]=="rt" or keys[0]=="ent":
 				if menu<3 :menu=menu+1
-			if keys[0]=="tab":
+			if keys[0]=="tab" or keys[0]=="alt":
 				beep()
 				return 1
 			if menu==0:
@@ -258,11 +284,11 @@ def setup():
 					config.spread=valueUp(7,12,config.spread)
 				screen[0].text = "{:.d} Radio:".format(menu)
 				screen[1].text = "[F] Frequency: {:5.2f}MHz".format(config.freq)
-				screen[2].text = "[S] Spread {:.d}".format(config.spread)
-				screen[3].text = "[P] Power {:.d}".format(config.power)
-				screen[4].text = "[S] Bandwidth {:.d}".format(config.bandwidth)
-				screen[5].text = "[C] Coding rate {:.d}".format(config.codingRate)
-				screen[6].text = "[X] Preset"
+				screen[2].text = "[P] Power {:.d}".format(config.power)
+				screen[3].text = "[X] Preset"
+				screen[4].text = ""
+				screen[5].text = ""
+				screen[6].text = ""
 				screen[7].text = ""
 				screen[8].text = "Ready ..."
 				screen.show()
@@ -350,8 +376,9 @@ def editor(text):
 				if layout==3:
 					layout=0
 				keys[0]=""
-			if keys[0]=='X':
-				keys[0]=""
+			if keys[0]=='bsp' and cursor==0:
+				text = ""
+				return text
 			if keys[0]=="bsp":
 				if cursor>0 :
 					editText=(editText[0:cursor-1])+(editText[cursor:])
@@ -398,15 +425,15 @@ def editor(text):
 
 
 #----------------------FUNCTIONS---------------------------
-#configure picomputer devices (display, LED, Speaker)
-#picomputer.init()
 
-# Define the onboard LED
 #with open('x.txt', 'w') as f:
-#    f.write(b'abcdefg')
+#    f.write("Hello world!\r\n")
 #    f.close()
 
 
+if config.model=="compact":
+	KBL = digitalio.DigitalInOut(board.GP14)
+	KBL.direction = digitalio.Direction.OUTPUT
 
 LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
@@ -464,10 +491,14 @@ spi = busio.SPI(board.GP10, MOSI=board.GP11, MISO=board.GP12)
 
 RADIO_FREQ_MHZ = config.freq #869.45  # Frequency of the radio in Mhz. Must match your
 print('starting Lora')
-
-#Bw125Cr48Sf4096 = (0x78, 0xc4, 0x0c) #/< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
+    #Bw125Cr45Sf128 = (0x72, 0x74, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
+    #Bw500Cr45Sf128 = (0x92, 0x74, 0x04) #< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range
+    #Bw31_25Cr48Sf512 = (0x48, 0x94, 0x04) #< Bw = 31.25 kHz, Cr = 4/8, Sf = 512chips/symbol, CRC on. Slow+long range
+    #Bw125Cr48Sf4096 = (0x78, 0xc4, 0x0c) #/< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
+    #Bw125Cr45Sf2048 = (0x72, 0xb4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+long range
+    #Bw31Cr48Sf4096 = (0x48, 0xc4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+Extra long range
 try:
-	rfm9x = ulora.LoRa(spi, CS, modem_config=ulora.ModemConfig.Bw125Cr48Sf4096,tx_power=23) #, interrupt=28
+	rfm9x = ulora.LoRa(spi, CS, modem_config=ulora.ModemConfig.Bw500Cr45Sf128,tx_power=config.power) #, interrupt=28
 except:
 	print("Lora module not detected !!!") #None
 
@@ -491,8 +522,8 @@ while True:
 	screen[2].text = "To:("+str(config.dest0)+")"
 	screen[3].text = "[M] Memory - ALL:"+str(countMessages(""))
 	screen[4].text = "New:"+str(countMessages("|N|"))+" Undelivered:"+str(countMessages("|S|")) 
-	screen[5].text = "[C] Contacts [I] HW Info"
-	screen[6].text = "[X] Chat     [P] Ping"
+	screen[5].text = "[ ]          [I] HW Info"
+	screen[6].text = "[ ]          [ ]"
 	screen[7].text = "[T] Terminal [S] Setup"
 	screen[8].text = "Ready ..."
 	screen.show()
@@ -523,15 +554,16 @@ while True:
 	if not keys:
 		continue
 	if keys[0]=='n':
-		ring()
 		text=editor (text="")
-		config.msgID3=random.randint(0, 255)
-		config.msgID2=random.randint(0, 255)
-		config.msgID1=random.randint(0, 255)
-		config.msgID0=msgCounter #messageID
-		sendMessage(text)
-		message = receiveMessage()
-		msgCounter +=1
+		if not text=="":
+			ring()
+			config.msgID3=random.randint(0, 255)
+			config.msgID2=random.randint(0, 255)
+			config.msgID1=random.randint(0, 255)
+			config.msgID0=msgCounter #messageID
+			sendMessage(text)
+			message = receiveMessage()
+			msgCounter +=1
 	if keys[0]=='m':
 		showMemory()
 		ring()
@@ -540,8 +572,13 @@ while True:
 	if keys[0]=='b':
 		SMPSmode.value=False			
 	if keys[0]=='e':
-		ring()
-		countMessages()
+		with open("config.txt", "r") as f:
+			lines = f.readline()
+			print("Printing lines in file:")
+			itm=lines.split(";")
+			for line in itm:
+				print(line)
+			f.close()
 	if keys[0]=='i':
 		screen[0].text = "System info:"
 		screen[1].text = "VSYS power = {:5.2f} V".format(get_VSYSvoltage())
@@ -560,7 +597,6 @@ while True:
 		keys = keypad.pressed_keys
 		while not keys:
 			keys = keypad.pressed_keys
-
 	if keys[0]=='s':
 		ring()
 		setup()	
@@ -570,7 +606,13 @@ while True:
 		keys = keypad.pressed_keys
 		while not keys:
 			keys = keypad.pressed_keys
-
+	if config.model=="compact":
+		if keys[0]=='q':
+			KBL.value=True
+			ring()
+		if keys[0]=='a':
+			KBL.value=False
+			ring()
 
 
 
