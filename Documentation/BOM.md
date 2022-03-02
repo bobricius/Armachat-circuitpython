@@ -1,6 +1,9 @@
-All prices are in US Dollars
+All prices are in US Dollars.
+-
 
-|   |   |   |   |   | Totals | 75 |   | $      54.64
+
+
+  |   |   |   |   |   | Totals | 75 |   | $      54.64
 -- | -- | -- | -- | -- | -- | -- | -- | -- | --
   |   |   |   |   |   |   |   |   |  
 Line | Req/Optional | Description | MFG | MFG P/N | Supplier | Supplier P/N | QTY | EA | EXT
