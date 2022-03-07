@@ -2,16 +2,17 @@ import time
 import board
 import busio
 import gc
-import terminalio
+
+# import terminalio
 import displayio
 import digitalio
 import microcontroller
 import storage
 
 
-from digitalio import DigitalInOut
+# from digitalio import DigitalInOut
 
-from adafruit_display_text import label
+# from adafruit_display_text import label
 from adafruit_st7789 import ST7789
 
 
@@ -22,8 +23,8 @@ safeGND = digitalio.DigitalInOut(board.GP1)  # <-- choose your button col pin / 
 safeGND.direction = digitalio.Direction.OUTPUT
 safeGND.value = False
 
-VBUS_status = digitalio.DigitalInOut(board.VBUS_SENSE) # defaults to input
-VBUS_status.pull = digitalio.Pull.UP # turn on internal pull-up resistor
+VBUS_status = digitalio.DigitalInOut(board.VBUS_SENSE)  # defaults to input
+VBUS_status.pull = digitalio.Pull.UP  # turn on internal pull-up resistor
 
 safe = digitalio.DigitalInOut(board.GP9)  # <-- choose your button row pin / DEL / 2
 safe.pull = digitalio.Pull.UP
@@ -53,28 +54,28 @@ display = ST7789(
 # display.show(splash)
 
 
-print ("Free memory:")
-print (gc.mem_free())
+print("Free memory:")
+print(gc.mem_free())
 
-if VBUS_status.value :
-	print("USB power connected")
+if VBUS_status.value:
+    print("USB power connected")
 else:
-	print ("No USB power")
-writemode=True
+    print("No USB power")
+writemode = True
 
-print ("Press DEL for SAFE MODE")
-print ("Press ALT for WRITE from code")
+print("Press DEL for SAFE MODE")
+print("Press ALT for WRITE from code")
 LED.value = False
 for x in range(16):
-	LED.value = not LED.value  # toggle LED on/off as notice
-	time.sleep(0.05)
-	if safe.value is False:
-		print ("SAFE MODE DETECTED .....")
-		microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
-		microcontroller.reset()
-	if wrp.value is False:
-		print ("Write mode enabled .....")
-		writemode=False
+    LED.value = not LED.value  # toggle LED on/off as notice
+    time.sleep(0.05)
+    if safe.value is False:
+        print("SAFE MODE DETECTED .....")
+        microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
+        microcontroller.reset()
+    if wrp.value is False:
+        print("Write mode enabled .....")
+        writemode = False
 # RENAME DRIVE
 new_name = "ARMACHAT"
 
@@ -83,4 +84,4 @@ m = storage.getmount("/")
 m.label = new_name
 storage.remount("/", readonly=writemode)
 
-print ("Starting code.py...")
+print("Starting code.py...")
