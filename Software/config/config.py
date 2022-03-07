@@ -8,15 +8,15 @@ import digitalio
     #Bw31Cr48Sf4096 = (0x48, 0xc4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+Extra long range
 
 
-unitName ="ARMACHAT"
-freq = 868.0
+unitName ="ARMACHAT01"
+freq = 915.0
 spread = 10
 power = 23
 bandwidth = 41700
 codingRate = 8
 
 
-myName ="DemoUser"
+myName ="RichT"
 
 myGroup3 = 0x03
 myGroup2 = 0x02
@@ -56,7 +56,7 @@ if model=="compact":
 			 ('p', 'o', 'i', 'u', 'y'),
 			 ("alt", 'z', 'x', 'c', 'v'),
 			 ('a', 's', 'd', 'f', 'g'),
-			 ('q', 'w', 'e', 'r', 't'))  
+			 ('q', 'w', 'e', 'r', 't'))
 
 	keys2 =  (('rt', ',', '>', '<','""'),
 			 ('lt', '-', '*', '&', '+'),
@@ -70,7 +70,7 @@ if model=="compact":
 			 ('P', 'O', 'I', 'U', 'Y'),
 			 ("alt", 'Z', 'X', 'C', 'V'),
 			 ('A', 'S', 'D', 'F', 'G'),
-			 ('Q', 'W', 'E', 'R', 'T')) 
+			 ('Q', 'W', 'E', 'R', 'T'))
 
 else:
 	cols = [digitalio.DigitalInOut(x) for x in (board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP14)]
@@ -80,7 +80,7 @@ else:
 			 ('p', 'o', 'i', 'u', 'y',"up"),
 			 ("bsp", 'z', 'x', 'c', 'v',"rt"),
 			 ('a', 's', 'd', 'f', 'g',"tab"),
-			 ('q', 'w', 'e', 'r', 't',"alt"))  
+			 ('q', 'w', 'e', 'r', 't',"alt"))
 
 	keys2 =  (('_', ',', '>', '<','""','{'),
 			 ('~', '-', '*', '&', '+','['),
@@ -94,4 +94,4 @@ else:
 			 ('P', 'O', 'I', 'U', 'Y',"up"),
 			 ("bsp", 'Z', 'X', 'C', 'V',"rt"),
 			 ('A', 'S', 'D', 'F', 'G',"tab"),
-			 ('Q', 'W', 'E', 'R', 'T',"alt")) 
+			 ('Q', 'W', 'E', 'R', 'T',"alt"))

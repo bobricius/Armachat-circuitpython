@@ -18,17 +18,17 @@ from adafruit_st7789 import ST7789
 LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
 
-safeGND = digitalio.DigitalInOut(board.GP14)
+safeGND = digitalio.DigitalInOut(board.GP1)  # <-- choose your button col pin / 1
 safeGND.direction = digitalio.Direction.OUTPUT
 safeGND.value = False
 
 VBUS_status = digitalio.DigitalInOut(board.VBUS_SENSE) # defaults to input
 VBUS_status.pull = digitalio.Pull.UP # turn on internal pull-up resistor
 
-safe = digitalio.DigitalInOut(board.GP7)  # <-- choose your button pin
+safe = digitalio.DigitalInOut(board.GP9)  # <-- choose your button row pin / DEL / 2
 safe.pull = digitalio.Pull.UP
 
-wrp = digitalio.DigitalInOut(board.GP22)  # <-- choose your button pin
+wrp = digitalio.DigitalInOut(board.GP8)  # <-- choose your button row pin / ALT / 4
 wrp.pull = digitalio.Pull.UP
 
 # Release any resources currently in use for the displays
@@ -62,7 +62,7 @@ else:
 	print ("No USB power")
 writemode=True
 
-print ("Press ESC for SAFE MODE")
+print ("Press DEL for SAFE MODE")
 print ("Press ALT for WRITE from code")
 LED.value = False
 for x in range(16):
