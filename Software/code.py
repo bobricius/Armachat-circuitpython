@@ -1,5 +1,5 @@
 import time
-import alarm
+# import alarm
 import board
 import busio
 import terminalio
@@ -10,11 +10,11 @@ import os
 import aesio
 import random
 from binascii import hexlify
-import microcontroller
+# import microcontroller
 from adafruit_simple_text_display import SimpleTextDisplay
-import adafruit_imageload
+# import adafruit_imageload
 import adafruit_matrixkeypad
-from adafruit_bitmap_font import bitmap_font
+# from adafruit_bitmap_font import bitmap_font
 from pwmio import PWMOut
 
 from adafruit_display_text import label
