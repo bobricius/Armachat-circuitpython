@@ -1,0 +1,5 @@
+https://wiki.dragino.com/index.php?title=LoRa_Questions
+The RF96 mark means this module is the HopeRF RFM95W-868-S2 or RFM95W-915-S2 module. Both modules use the Semtech SX1276 IC on it.
+
+https://github.com/martynwheeler/u-lora
+ulora

@@ -1,4 +1,5 @@
 import time
+
 # import alarm
 import board
 import busio
@@ -10,10 +11,13 @@ import os
 import aesio
 import random
 from binascii import hexlify
+
 # import microcontroller
 from adafruit_simple_text_display import SimpleTextDisplay
+
 # import adafruit_imageload
 import adafruit_matrixkeypad
+
 # from adafruit_bitmap_font import bitmap_font
 from pwmio import PWMOut
 
@@ -94,12 +98,22 @@ def clearScreen(stat=""):
         screen[i].text = ""
 
 
+def screenSafeText(txt=""):
+    retText = txt
+
+    for x in range(32):
+        if x != 9 and x != 10 and x != 13:
+            retText = retText.replace(chr(x), "")
+
+    return retText
+
 def showMemory():
     msg = 0
     clearScreen()
     ring()
     screen.show()
     while True:
+        time.sleep(0.1)  # a little delay here helps avoid debounce annoyances
         keys = keypad.pressed_keys
         if keys:
             beep()
@@ -157,13 +171,13 @@ def showMemory():
                 screen[6].text = "RSSI:" + oneItm[5] + " SNR:" + oneItm[6]
                 screen[7].text = "Time:" + oneItm[7]
             else:
-                screen[1].text = oneItm[8]
-                screen[2].text = oneItm[9]
-                screen[3].text = oneItm[10]
-                screen[4].text = oneItm[11]
-                screen[5].text = oneItm[12]
-                screen[6].text = oneItm[13]
-                screen[7].text = oneItm[14]
+                screen[1].text = screenSafeText(oneItm[8])
+                screen[2].text = screenSafeText(oneItm[9])
+                screen[3].text = screenSafeText(oneItm[10])
+                screen[4].text = screenSafeText(oneItm[11])
+                screen[5].text = screenSafeText(oneItm[12])
+                screen[6].text = screenSafeText(oneItm[13])
+                screen[7].text = screenSafeText(oneItm[14])
 
 
 def sendMessage(text):
@@ -302,6 +316,13 @@ def receiveMessage():
             + packet_text,
             "utf-8",
         )
+
+        msgPart = storedMsg.split("|")
+
+        while len(msgPart) < 16:
+            storedMsg = storedMsg + "|"
+            msgPart = storedMsg.split("|")
+
         # print("RSSI:{:.1f}".format(rssi))
         print("SNR:" + snr + " RSSI:" + rssi)
         # HEADER
@@ -317,7 +338,7 @@ def receiveMessage():
         print("Response header ...")
         print(hexlify(header))
         rfm9x.send(list(bytearray(header + "!")), 0)  # (list(outp), 0)
-        print("Comfirmation send ...")
+        print("Confirmation send ...")
         LED.value = False
     return packet_text
 
