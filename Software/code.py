@@ -17,8 +17,7 @@ from adafruit_simple_text_display import SimpleTextDisplay
 
 # import adafruit_imageload
 import adafruit_matrixkeypad
-
-# from adafruit_bitmap_font import bitmap_font
+from adafruit_bitmap_font import bitmap_font
 from pwmio import PWMOut
 
 from adafruit_display_text import label
@@ -29,6 +28,10 @@ import digitalio
 # import adafruit_rfm9x
 import ulora
 
+modemPreset = (0x72, 0x74, 0x04)  # < Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol,
+#  CRC on. Default medium range
+modemPresetConfig = "c"
+modemPresetDescription = "d"
 messages = ["1|2|3|4|5|6|7|8|a1|a2|a3|a4|a5|a6|a7|a8"]
 msgCounter = 0x00
 message = ""
@@ -104,8 +107,8 @@ def screenSafeText(txt=""):
     for x in range(32):
         if x != 9 and x != 10 and x != 13:
             retText = retText.replace(chr(x), "")
-
     return retText
+
 
 def showMemory():
     msg = 0
@@ -170,6 +173,7 @@ def showMemory():
                 screen[5].text = "Hop:" + oneItm[3]
                 screen[6].text = "RSSI:" + oneItm[5] + " SNR:" + oneItm[6]
                 screen[7].text = "Time:" + oneItm[7]
+                screen[8].text = "[ALT] Exit"
             else:
                 screen[1].text = screenSafeText(oneItm[8])
                 screen[2].text = screenSafeText(oneItm[9])
@@ -178,6 +182,7 @@ def showMemory():
                 screen[5].text = screenSafeText(oneItm[12])
                 screen[6].text = screenSafeText(oneItm[13])
                 screen[7].text = screenSafeText(oneItm[14])
+                screen[8].text = "ALT-Ex Ent> Del< SPC-Detail"
 
 
 def sendMessage(text):
@@ -322,7 +327,6 @@ def receiveMessage():
         while len(msgPart) < 16:
             storedMsg = storedMsg + "|"
             msgPart = storedMsg.split("|")
-
         # print("RSSI:{:.1f}".format(rssi))
         print("SNR:" + snr + " RSSI:" + rssi)
         # HEADER
@@ -368,6 +372,7 @@ def setup():
     while True:
         keys = keypad.pressed_keys
         if keys:
+            print(keys)
             beep()
             if keys[0] == "lt" or keys[0] == "bsp":
                 if menu > 0:
@@ -379,17 +384,18 @@ def setup():
                 beep()
                 return 1
             if menu == 0:
-                if keys[0] == "s":
-                    config.spread = valueUp(7, 12, config.spread)
+                if keys[0] == "x":
+                    config.loraProfile = valueUp(1, 6, config.loraProfile)
+                    loraProfileSetup(config.loraProfile)
                 screen[0].text = "{:.d} Radio:".format(menu)
                 screen[1].text = "[F] Frequency: {:5.2f}MHz".format(config.freq)
                 screen[2].text = "[P] Power {:.d}".format(config.power)
-                screen[3].text = "[X] Preset"
-                screen[4].text = ""
-                screen[5].text = ""
+                screen[3].text = "[X] Profile {:.d}".format(config.loraProfile)
+                screen[4].text = modemPresetConfig
+                screen[5].text = modemPresetDescription
                 screen[6].text = ""
                 screen[7].text = ""
-                screen[8].text = "Ready ..."
+                screen[8].text = "[ALT] Exit [Ent] > [Del] <"
                 screen.show()
             elif menu == 1:
                 if keys[0] == "n":
@@ -402,7 +408,7 @@ def setup():
                 screen[5].text = "[G] Group 1:{}".format(config.myGroup1)
                 screen[6].text = "[I] ID:     {}".format(config.myID)
                 screen[7].text = "[E] Encryption {}"
-                screen[8].text = "Ready ..."
+                screen[8].text = "[ALT] Exit [Ent] > [Del] <"
                 screen.show()
             elif menu == 2:
                 screen[0].text = "{:.d} Display:".format(menu)
@@ -413,7 +419,7 @@ def setup():
                 screen[5].text = ""
                 screen[6].text = ""
                 screen[7].text = ""
-                screen[8].text = "Ready ..."
+                screen[8].text = "[ALT] Exit [Ent] > [Del] <"
                 screen.show()
             elif menu == 3:
                 if keys[0] == "v":
@@ -427,7 +433,7 @@ def setup():
                 screen[5].text = ""
                 screen[6].text = ""
                 screen[7].text = ""
-                screen[8].text = "Ready ..."
+                screen[8].text = "[ALT] Exit [Ent] > [Del] <"
                 screen.show()
 
 
@@ -437,6 +443,7 @@ def editor(text):
     editLine = 0
     editText = text
     layoutName = "abc"
+    EditorScreen[8].text = "[Ent] confirm"
     EditorScreen.show()
     line = ["0", "1", "2", "3", "4", "5", "6"]
     line[0] = text
@@ -470,18 +477,23 @@ def editor(text):
                 config.rows, config.cols, config.keys1
             )
             layoutName = "abc"
+            HotKeysHelp = "[Ent] Send    [Del] Delete"
         elif layout == 1:
             keypad = adafruit_matrixkeypad.Matrix_Keypad(
                 config.rows, config.cols, config.keys2
             )
             layoutName = "123"
+            HotKeysHelp = "[Ent] < Left  [Del] > Right"
         elif layout == 2:
             keypad = adafruit_matrixkeypad.Matrix_Keypad(
                 config.rows, config.cols, config.keys3
             )
             layoutName = "ABC"
-
+            HotKeysHelp = "[Ent] Down    [Del] Up"
         keys = keypad.pressed_keys
+
+        if config.model == "compact":
+            EditorScreen[8].text = HotKeysHelp
 
         if keys:
             if keys[0] == "alt":
@@ -511,7 +523,6 @@ def editor(text):
                 EditorScreen[editLine + 1].text = editText
                 if editLine > 0:
                     editLine = editLine - 1
-
                 editText = line[editLine]
                 cursor = 0
                 keys[0] = ""
@@ -520,7 +531,6 @@ def editor(text):
                 EditorScreen[editLine + 1].text = editText
                 if editLine < config.maxLines:
                     editLine = editLine + 1
-
                 editText = line[editLine]
                 cursor = 0
                 keys[0] = ""
@@ -543,6 +553,43 @@ def editor(text):
             EditorScreen.show()
 
 
+def loraProfileSetup(profile):
+    global modemPresetConfig
+    global modemPresetDescription
+    global modemPreset
+
+    if profile == 1:
+        modemPreset = (0x72, 0x74, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
+        #   Sf = 128chips/symbol, CRC on. Default medium range
+        modemPresetConfig = "Bw125Cr45Sf128"
+        modemPresetDescription = "Default medium range"
+    if profile == 2:
+        modemPreset = (0x92, 0x74, 0x04)  # < Bw = 500 kHz, Cr = 4/5,
+        #   Sf = 128chips/symbol, CRC on. Fast+short range
+        modemPresetConfig = "Bw500Cr45Sf128"
+        modemPresetDescription = "Fast+short range"
+    if profile == 3:
+        modemPreset = (0x48, 0x94, 0x04)  # < Bw = 31.25 kHz, Cr = 4/8,
+        #   Sf = 512chips/symbol, CRC on. Slow+long range
+        modemPresetConfig = "Bw31_25Cr48Sf512"
+        modemPresetDescription = "Slow+long range"
+    if profile == 4:
+        modemPreset = (0x78, 0xC4, 0x0C)  # < Bw = 125 kHz, Cr = 4/8,
+        #   Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
+        modemPresetConfig = "Bw125Cr48Sf4096"
+        modemPresetDescription = "Slow+long range"
+    if profile == 5:
+        modemPreset = (0x72, 0xB4, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
+        #   Sf = 2048chips/symbol, CRC on. Slow+long range
+        modemPresetConfig = "Bw125Cr45Sf2048"
+        modemPresetDescription = "Slow+long range"
+    if profile == 6:
+        modemPreset = (0x48, 0xC4, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
+        #   Sf = 2048chips/symbol, CRC on. Slow+Extra long range
+        modemPresetConfig = "Bw31Cr48Sf4096"
+        modemPresetDescription = "Slow+Extra long range"
+
+
 # ----------------------FUNCTIONS---------------------------
 
 # with open('x.txt', 'w') as f:
@@ -553,7 +600,6 @@ def editor(text):
 if config.model == "compact":
     KBL = digitalio.DigitalInOut(board.GP14)
     KBL.direction = digitalio.Direction.OUTPUT
-
 LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
 VSYS_voltage = analogio.AnalogIn(board.VOLTAGE_MONITOR)
@@ -597,9 +643,10 @@ display.show(text_area)
 
 
 # font
-# font_file = "fonts/neep-iso8859-1-12x24.bdf"
-# font_file = "fonts/gohufont-14.bdf"
-# font_file = "fonts/Gomme10x20n.bdf"
+# font_file = "fonts/neep-24.pcf"
+# font_file = "fonts/gohufont-14.pcf"
+# font_file = "fonts/Gomme10x20n.pcf"
+# font_file = "fonts/Arial-18.pcf"
 # font = bitmap_font.load_font(font_file)
 font = terminalio.FONT
 
@@ -613,25 +660,15 @@ spi = busio.SPI(board.GP10, MOSI=board.GP11, MISO=board.GP12)
 
 RADIO_FREQ_MHZ = config.freq  # 869.45  # Frequency of the radio in Mhz. Must match your
 print("starting Lora")
-# Bw125Cr45Sf128 = (0x72, 0x74, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol,
-#   CRC on. Default medium range
-# Bw500Cr45Sf128 = (0x92, 0x74, 0x04) #< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol,
-#   CRC on. Fast+short range
-# Bw31_25Cr48Sf512 = (0x48, 0x94, 0x04) #< Bw = 31.25 kHz, Cr = 4/8,
-#   Sf = 512chips/symbol, CRC on. Slow+long range
-# Bw125Cr48Sf4096 = (0x78, 0xc4, 0x0c) #/< Bw = 125 kHz, Cr = 4/8,
-#   Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
-# Bw125Cr45Sf2048 = (0x72, 0xb4, 0x04) #< Bw = 125 kHz, Cr = 4/5,
-#   Sf = 2048chips/symbol, CRC on. Slow+long range
-# Bw31Cr48Sf4096 = (0x48, 0xc4, 0x04) #< Bw = 125 kHz, Cr = 4/5,
-#   Sf = 2048chips/symbol, CRC on. Slow+Extra long range
+
+loraProfileSetup(config.loraProfile)
+
 try:
     rfm9x = ulora.LoRa(
-        spi, CS, modem_config=ulora.ModemConfig.Bw500Cr45Sf128, tx_power=config.power
+        spi, CS, modem_config=modemPreset, tx_power=config.power
     )  # , interrupt=28
 except Exception:
     print("Lora module not detected !!!")  # None
-
 
 print("Free memory:")
 print(gc.mem_free())
@@ -649,14 +686,14 @@ EditorScreen = SimpleTextDisplay(
         SimpleTextDisplay.WHITE,
         SimpleTextDisplay.WHITE,
         SimpleTextDisplay.WHITE,
-        SimpleTextDisplay.WHITE,
+        SimpleTextDisplay.GREEN,
     ),
 )
 
 screen = SimpleTextDisplay(
     display=display,
     font=font,
-    title="Armachat messenger:",
+    title="ARMACHAT {:5.2f}MHz".format(config.freq),
     title_scale=1,
     text_scale=2,
     colors=(
@@ -671,6 +708,7 @@ screen = SimpleTextDisplay(
         SimpleTextDisplay.RED,
     ),
 )
+
 print("Screen ready,Free memory:")
 print(gc.mem_free())
 while True:

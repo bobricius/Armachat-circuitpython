@@ -1,6 +1,14 @@
 import board
 import digitalio
 
+loraProfile = 2
+# 1 => Bw125Cr45Sf128
+# 2 => Bw500Cr45Sf128
+# 3 => Bw31_25Cr48Sf512
+# 4 => Bw125Cr48Sf4096
+# 5 => Bw125Cr45Sf2048
+# 6 => Bw31Cr48Sf4096
+
 # Bw125Cr45Sf128 = (0x72, 0x74, 0x04) #< Bw = 125 kHz, Cr = 4/5,
 #   Sf = 128chips/symbol, CRC on. Default medium range
 # Bw500Cr45Sf128 = (0x92, 0x74, 0x04) #< Bw = 500 kHz, Cr = 4/5,
