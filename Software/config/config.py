@@ -28,7 +28,7 @@ freq = 915.0
 spread = 10
 power = 23
 bandwidth = 41700
-codingRate = 2
+codingRate = 8
 
 
 myName = "RichT"
