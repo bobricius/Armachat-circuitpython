@@ -17,7 +17,8 @@ from adafruit_simple_text_display import SimpleTextDisplay
 
 # import adafruit_imageload
 import adafruit_matrixkeypad
-from adafruit_bitmap_font import bitmap_font
+
+# from adafruit_bitmap_font import bitmap_font
 from pwmio import PWMOut
 
 from adafruit_display_text import label
@@ -387,6 +388,7 @@ def setup():
                 if keys[0] == "x":
                     config.loraProfile = valueUp(1, 6, config.loraProfile)
                     loraProfileSetup(config.loraProfile)
+                    radioInit()
                 screen[0].text = "{:.d} Radio:".format(menu)
                 screen[1].text = "[F] Frequency: {:5.2f}MHz".format(config.freq)
                 screen[2].text = "[P] Power {:.d}".format(config.power)
@@ -589,6 +591,15 @@ def loraProfileSetup(profile):
         modemPresetConfig = "Bw31Cr48Sf4096"
         modemPresetDescription = "Slow+Extra long range"
 
+def radioInit():
+    global rfm9x
+
+    try:
+        rfm9x = ulora.LoRa(
+            spi, CS, freq=config.freq, modem_config=modemPreset, tx_power=config.power
+        )  # , interrupt=28
+    except Exception:
+        print("Lora module not detected !!!")  # None
 
 # ----------------------FUNCTIONS---------------------------
 
@@ -657,18 +668,13 @@ RESET = digitalio.DigitalInOut(board.GP17)
 spi = busio.SPI(board.GP10, MOSI=board.GP11, MISO=board.GP12)
 # Initialze radio
 
-
-RADIO_FREQ_MHZ = config.freq  # 869.45  # Frequency of the radio in Mhz. Must match your
 print("starting Lora")
 
 loraProfileSetup(config.loraProfile)
 
-try:
-    rfm9x = ulora.LoRa(
-        spi, CS, modem_config=modemPreset, tx_power=config.power
-    )  # , interrupt=28
-except Exception:
-    print("Lora module not detected !!!")  # None
+rfm9x = None
+
+radioInit()
 
 print("Free memory:")
 print(gc.mem_free())
