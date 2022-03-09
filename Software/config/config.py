@@ -1,20 +1,17 @@
 import board
 import digitalio
-    #Bw125Cr45Sf128 = (0x72, 0x74, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
-    #Bw500Cr45Sf128 = (0x92, 0x74, 0x04) #< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range
-    #Bw31_25Cr48Sf512 = (0x48, 0x94, 0x04) #< Bw = 31.25 kHz, Cr = 4/8, Sf = 512chips/symbol, CRC on. Slow+long range
-    #Bw125Cr48Sf4096 = (0x78, 0xc4, 0x0c) #/< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
-    #Bw125Cr45Sf2048 = (0x72, 0xb4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+long range
-    #Bw31Cr48Sf4096 = (0x48, 0xc4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+Extra long range
-
 
 unitName ="ARMACHAT"
-freq = 868.0
-spread = 10
+freq = 915.0
 power = 23
-bandwidth = 41700
-codingRate = 8
 
+#1 Bw125Cr45Sf128    Default medium range
+#2 Bw500Cr45Sf128    Fast+short range
+#3 Bw31_25Cr48Sf512  Slow+long range
+#4 Bw125Cr48Sf4096   low data rate, Slow+long range
+#5 Bw125Cr45Sf2048   Slow+long range
+#6 Bw31Cr48Sf4096    Slow+Extra long range
+loraProfile = 6
 
 myName ="DemoUser"
 
