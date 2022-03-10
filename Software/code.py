@@ -269,10 +269,12 @@ def receiveMessage():
     # If no packet was received during the timeout then None is returned.
 
     if packet is not None:
-        print("packet -> " + packet)
+        print("packet -> ")
+        print(packet)
         header = packet[0:16]
         print("Received header:")
-        print("header -> " + hexlify(header))
+        print("header -> ")
+        print(hexlify(header))
         if len(packet) > 16 and packet[16] == 33:  # 33 = sybol !
             #                                        it is delivery confirmation
             print("Delivery comfirmation")
@@ -593,7 +595,6 @@ def loraProfileSetup(profile):
         modemPresetConfig = "Bw31Cr48Sf4096"
         modemPresetDescription = "Slow+Extra long range"
 
-
 def radioInit():
     global rfm9x
 
@@ -603,7 +604,6 @@ def radioInit():
         )  # , interrupt=28
     except Exception:
         print("Lora module not detected !!!")  # None
-
 
 # ----------------------FUNCTIONS---------------------------
 
