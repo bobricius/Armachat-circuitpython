@@ -23,7 +23,7 @@ loraProfile = 2
 #   Sf = 2048chips/symbol, CRC on. Slow+Extra long range
 
 
-unitName = "ARMACHAT03"
+unitName = "ARMACHAT01"
 freq = 915.0
 spread = 10
 power = 23
