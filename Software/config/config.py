@@ -5,13 +5,16 @@ unitName = "ARMACHAT"
 freq = 915.0
 power = 23
 
-# 1 => Bw125Cr45Sf128       Default medium range
-# 2 => Bw500Cr45Sf128       Fast+short range
-# 3 => Bw31_25Cr48Sf512     Slow+long range
-# 4 => Bw125Cr48Sf4096      low data rate, Slow+long range
-# 5 => Bw125Cr45Sf2048      Slow+long range
-# 6 => Bw31Cr48Sf4096       Slow+Extra long range
-loraProfile = 6
+# Matches Mestastic values in table at
+# https://meshtastic.org/docs/settings/channel
+# 1 => Bw500Cr45Sf128       Short/Fast
+# 2 => Bw125Cr45Sf128       Short/Slow
+# 3 => Bw250Cr47Sf1024      Medium/Fast
+# 4 => Bw250Cr46Sf2048      Medium/Slow
+# 5 => Bw31_25Cr48Sf512     Long/Fast
+# 6 => Bw125Cr48Sf4096      Long/Slow
+
+loraProfile = 1
 
 myName = "DemoUser"
 

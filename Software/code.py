@@ -28,6 +28,8 @@ import digitalio
 # import adafruit_rfm9x
 import ulora
 
+FREQ_LIST = [169.0, 434.0, 868.0, 915.0]
+
 modemPreset = (0x72, 0x74, 0x04)  # < Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol,
 #  CRC on. Default medium range
 modemPresetConfig = "c"
@@ -360,6 +362,24 @@ def valueUp(min, max, value):
     return value
 
 
+def getListIndex(lst, value):
+    for i in range(len(lst)):
+        if lst[i] == value:
+            return i
+    return -1
+
+
+def valueUpList(lst, value):
+    idx = getListIndex(lst, value) + 1
+
+    if idx >= len(lst):
+        idx = 0
+    if idx < 0:
+        idx = len(lst) - 1
+
+    return lst[idx]
+
+
 def setup():
     menu = 0
     screen[0].text = "SETUP:"
@@ -376,7 +396,6 @@ def setup():
     while True:
         keys = keypad.pressed_keys
         if keys:
-            print(keys)
             beep()
             if keys[0] == "lt" or keys[0] == "bsp":
                 if menu > 0:
@@ -388,6 +407,12 @@ def setup():
                 beep()
                 return 1
             if menu == 0:
+                if keys[0] == "f":
+                    config.freq = valueUpList(FREQ_LIST, config.freq)
+                    radioInit()
+                if keys[0] == "p":
+                    config.power = valueUp(5, 23, config.power)
+                    radioInit()
                 if keys[0] == "x":
                     config.loraProfile = valueUp(1, 6, config.loraProfile)
                     loraProfileSetup(config.loraProfile)
