@@ -27,9 +27,14 @@ unitName = "ARMACHAT01"
 freq = 915.0
 spread = 10
 power = 23
-bandwidth = 41700
-codingRate = 8
 
+#1 Bw125Cr45Sf128    Default medium range
+#2 Bw500Cr45Sf128    Fast+short range
+#3 Bw31_25Cr48Sf512  Slow+long range
+#4 Bw125Cr48Sf4096   low data rate, Slow+long range
+#5 Bw125Cr45Sf2048   Slow+long range
+#6 Bw31Cr48Sf4096    Slow+Extra long range
+loraProfile = 6
 
 myName = "RichT"
 
