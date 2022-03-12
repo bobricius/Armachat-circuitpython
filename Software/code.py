@@ -564,35 +564,36 @@ def loraProfileSetup(profile):
     global modemPreset
 
     if profile == 1:
-        modemPreset = (0x72, 0x74, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
-        #   Sf = 128chips/symbol, CRC on. Default medium range
-        modemPresetConfig = "Bw125Cr45Sf128"
-        modemPresetDescription = "Default medium range"
-    if profile == 2:
-        modemPreset = (0x92, 0x74, 0x04)  # < Bw = 500 kHz, Cr = 4/5,
-        #   Sf = 128chips/symbol, CRC on. Fast+short range
+        modemPreset = (0x92, 0x74, 0x04)  # Bw = 500kHz, Cr = 4/5,
+        #   Sf = 128chips/symbol, CRC on.
         modemPresetConfig = "Bw500Cr45Sf128"
-        modemPresetDescription = "Fast+short range"
+        modemPresetDescription = "Short/Fast"
+    if profile == 2:
+        modemPreset = (0x72, 0x74, 0x04)  # Bw = 125kHz, Cr = 4/5,
+        #   Sf = 128chips/symbol, CRC on.
+        modemPresetConfig = "Bw125Cr45Sf128"
+        modemPresetDescription = "Short/Slow"
     if profile == 3:
-        modemPreset = (0x48, 0x94, 0x04)  # < Bw = 31.25 kHz, Cr = 4/8,
-        #   Sf = 512chips/symbol, CRC on. Slow+long range
-        modemPresetConfig = "Bw31_25Cr48Sf512"
-        modemPresetDescription = "Slow+long range"
+        modemPreset = (0x82, 0xA4, 0x04)  # Bw = 250kHz, Cr = 4/7,
+        #   Sf = 1024chips/symbol, CRC on.
+        modemPresetConfig = "Bw250Cr47Sf1024"
+        modemPresetDescription = "Medium/Fast"
     if profile == 4:
-        modemPreset = (0x78, 0xC4, 0x0C)  # < Bw = 125 kHz, Cr = 4/8,
-        #   Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
-        modemPresetConfig = "Bw125Cr48Sf4096"
-        modemPresetDescription = "Slow+long range"
+        modemPreset = (0x84, 0xB4, 0x04)  # Bw = 250kHz, Cr = 4/6,
+        #   Sf = 2048chips/symbol, CRC on.
+        modemPresetConfig = "Bw250Cr46Sf2048"
+        modemPresetDescription = "Medium/Slow"
     if profile == 5:
-        modemPreset = (0x72, 0xB4, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
-        #   Sf = 2048chips/symbol, CRC on. Slow+long range
-        modemPresetConfig = "Bw125Cr45Sf2048"
-        modemPresetDescription = "Slow+long range"
+        modemPreset = (0x48, 0x94, 0x04)  # Bw = 31.25kHz, Cr = 4/8,
+        #   Sf = 512chips/symbol, CRC on.
+        modemPresetConfig = "Bw31_25Cr48Sf512"
+        modemPresetDescription = "Long/Fast"
     if profile == 6:
-        modemPreset = (0x48, 0xC4, 0x04)  # < Bw = 125 kHz, Cr = 4/5,
-        #   Sf = 2048chips/symbol, CRC on. Slow+Extra long range
-        modemPresetConfig = "Bw31Cr48Sf4096"
-        modemPresetDescription = "Slow+Extra long range"
+        modemPreset = (0x78, 0xC4, 0x0C)  # Bw = 125kHz, Cr = 4/8,
+        #   Sf = 4096chips/symbol, CRC on.
+        modemPresetConfig = "Bw125Cr48Sf4096"
+        modemPresetDescription = "Long/Slow"
+
 
 def radioInit():
     global rfm9x
@@ -603,6 +604,7 @@ def radioInit():
         )  # , interrupt=28
     except Exception:
         print("Lora module not detected !!!")  # None
+
 
 # ----------------------FUNCTIONS---------------------------
 
@@ -850,4 +852,3 @@ while True:
         sendMessage(text)
         message = receiveMessage()
         msgCounter += 1
-
