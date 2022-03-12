@@ -75,12 +75,11 @@ else:
 LED.value = False
 for x in range(16):
     s = "["
-    for i in range(0, 15):
-        if i < 15 - x:
+    for i in range(0, 16):
+        if i <= x:
             s = s + "-"
         else:
             s = s + " "
-
     if x == 15:
         print(s + "]\n")
     else:

@@ -17,7 +17,7 @@ from adafruit_simple_text_display import SimpleTextDisplay
 # import adafruit_imageload
 import adafruit_matrixkeypad
 
-# from adafruit_bitmap_font import bitmap_font
+from adafruit_bitmap_font import bitmap_font
 from pwmio import PWMOut
 
 from adafruit_display_text import label
@@ -490,44 +490,12 @@ def editor(text):
             layoutName = "123"
             HotKeysHelp = "[Ent] < Left  [Del] > Right"
         elif layout == 2:
-		if config.model=="compact":
-			EditorScreen[8].text = HotKeysHelp
-            
-		keys = keypad.pressed_keys
-		
-		if keys:
-			if keys[0]=="alt":
-				layout=layout+1
-				ring()
-				if layout==3:
-					layout=0
-				keys[0]=""
-			if keys[0]=='bsp' and cursor==0:
-				text = ""
-				return text
-			if keys[0]=="bsp":
-				if cursor>0 :
-					editText=(editText[0:cursor-1])+(editText[cursor:])
-					cursor=cursor-1
-				keys[0]=""
-			if keys[0]=="lt":
-				if cursor>0 :cursor=cursor-1
-				keys[0]=""
-			if keys[0]=="rt":
-				if cursor<len(editText) :cursor=cursor+1
-				keys[0]=""
-			if keys[0]=="up":
-				line[editLine]=editText
-				EditorScreen[editLine+1].text = editText
-				if editLine>0 :editLine=editLine-1
-			
-				editText=line[editLine]
-				cursor=0
-				keys[0]=""
-			if keys[0]=="dn":
-				line[editLine]=editText
-				EditorScreen[editLine+1].text = editText
-				if editLine<config.maxLines :editLine=editLine+1
+            keypad = adafruit_matrixkeypad.Matrix_Keypad(
+                config.rows, config.cols, config.keys3
+            )
+            layoutName = "ABC"
+            HotKeysHelp = "[Ent] Down    [Del] Up"
+        keys = keypad.pressed_keys
 
         if config.model == "compact":
             EditorScreen[8].text = HotKeysHelp
@@ -589,30 +557,6 @@ def editor(text):
             )  # line[editLine]
             EditorScreen.show()
 
-    if profile == 1:
-        modemPreset = (0x72, 0x74, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
-        modemPresetConfig = "Bw125Cr45Sf128"
-        modemPresetDescription = "Default medium range"
-    if profile == 2:
-        modemPreset = (0x92, 0x74, 0x04) #< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range
-        modemPresetConfig = "Bw500Cr45Sf128"
-        modemPresetDescription = "Fast+short range"
-    if profile == 3:
-        modemPreset = (0x48, 0x94, 0x04) #< Bw = 31.25 kHz, Cr = 4/8, Sf = 512chips/symbol, CRC on. Slow+long range
-        modemPresetConfig = "Bw31_25Cr48Sf512"
-        modemPresetDescription = "Slow+long range"
-    if profile == 4:
-        modemPreset = (0x78, 0xc4, 0x0c) #< Bw = 125 kHz, Cr = 4/8, Sf = 4096chips/symbol, low data rate, CRC on. Slow+long range
-        modemPresetConfig = "Bw125Cr48Sf4096"
-        modemPresetDescription = "Slow+long range"
-    if profile == 5:
-        modemPreset = (0x72, 0xb4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+long range
-        modemPresetConfig = "Bw125Cr45Sf2048"
-        modemPresetDescription = "Slow+long range"
-    if profile == 6:
-        modemPreset = (0x48, 0xc4, 0x04) #< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+Extra long range
-        modemPresetConfig = "Bw31Cr48Sf4096"
-        modemPresetDescription = "Slow+Extra long range"
 
 def loraProfileSetup(profile):
     global modemPresetConfig
@@ -670,6 +614,7 @@ def radioInit():
 if config.model == "compact":
     KBL = digitalio.DigitalInOut(board.GP14)
     KBL.direction = digitalio.Direction.OUTPUT
+
 LED = digitalio.DigitalInOut(board.LED)
 LED.direction = digitalio.Direction.OUTPUT
 VSYS_voltage = analogio.AnalogIn(board.VOLTAGE_MONITOR)
@@ -713,12 +658,12 @@ display.show(text_area)
 
 
 # font
-# font_file = "fonts/neep-24.pcf"
+font_file = "fonts/neep-24.pcf"
 # font_file = "fonts/gohufont-14.pcf"
 # font_file = "fonts/Gomme10x20n.pcf"
 # font_file = "fonts/Arial-18.pcf"
-# font = bitmap_font.load_font(font_file)
-font = terminalio.FONT
+font = bitmap_font.load_font(font_file)
+# font = terminalio.FONT
 
 
 # Define pins connected to the chip.
@@ -739,9 +684,10 @@ print("Free memory:")
 print(gc.mem_free())
 EditorScreen = SimpleTextDisplay(
     display=display,
+    font=font,
     title="Armachat EDITOR",
     title_scale=1,
-    text_scale=2,
+    text_scale=1,
     colors=(
         SimpleTextDisplay.YELLOW,
         SimpleTextDisplay.WHITE,
@@ -760,7 +706,7 @@ screen = SimpleTextDisplay(
     font=font,
     title="ARMACHAT {:5.2f}MHz".format(config.freq),
     title_scale=1,
-    text_scale=2,
+    text_scale=1,
     colors=(
         SimpleTextDisplay.GREEN,
         SimpleTextDisplay.WHITE,
