@@ -76,7 +76,7 @@ LED.value = False
 for x in range(16):
     s = "["
     for i in range(0, 16):
-        if i <= x:
+        if 15 - i > x:
             s = s + "-"
         else:
             s = s + " "
