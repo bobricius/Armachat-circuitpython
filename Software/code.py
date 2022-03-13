@@ -211,7 +211,8 @@ def sendMessage(text):
 
     # random.randint(min, max)
     outp = bytearray(len(text))
-    cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
+    cipher = aesio.AES(bytes(config.password, "utf-8"),
+                       aesio.MODE_CTR, bytes(config.passwordIv, "utf-8"))
     cipher.encrypt_into(bytes(text, "utf-8"), outp)
     print("Send header:")
     print(hexlify(bytearray(header)))
@@ -286,7 +287,8 @@ def receiveMessage():
             packet_text = "D"
             return packet_text
         # Decrypt
-        cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
+        cipher = aesio.AES(bytes(config.password, "utf-8"),
+                           aesio.MODE_CTR, bytes(config.passwordIv, "utf-8"))
         inp = bytes(packet[16:])
         outp = bytearray(len(inp))
         cipher.encrypt_into(inp, outp)
@@ -410,13 +412,16 @@ def setup():
                 if keys[0] == "f":
                     config.freq = valueUpList(FREQ_LIST, config.freq)
                     radioInit()
+                    config.writeConfig()
                 if keys[0] == "p":
                     config.power = valueUp(5, 23, config.power)
                     radioInit()
+                    config.writeConfig()
                 if keys[0] == "x":
                     config.loraProfile = valueUp(1, 6, config.loraProfile)
                     loraProfileSetup(config.loraProfile)
                     radioInit()
+                    config.writeConfig()
                 screen[0].text = "{:.d} Radio:".format(menu)
                 screen[1].text = "[F] Frequency: {:5.2f}MHz".format(config.freq)
                 screen[2].text = "[P] Power {:.d}".format(config.power)
@@ -430,6 +435,7 @@ def setup():
             elif menu == 1:
                 if keys[0] == "n":
                     config.myName = editor(text=config.myName)
+                    config.writeConfig()
                 screen[0].text = "{:.d} Identity:".format(menu)
                 screen[1].text = "[N] Name: {} ".format(config.myName)
                 screen[2].text = "------"
@@ -455,6 +461,7 @@ def setup():
                 if keys[0] == "v":
                     config.volume = valueUp(0, 6, config.volume)
                     ring()
+                    config.writeConfig()
                 screen[0].text = "{:.d} Sound:".format(menu)
                 screen[1].text = "[V] Volume {}".format(config.volume)
                 screen[2].text = ""
@@ -749,6 +756,7 @@ screen = SimpleTextDisplay(
 
 print("Screen ready,Free memory:")
 print(gc.mem_free())
+
 while True:
     screen[0].text = ">(" + str(config.myID) + ")" + config.myName
     screen[1].text = "[N] New message"

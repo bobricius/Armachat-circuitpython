@@ -18,7 +18,7 @@ New Armachat based on Raspberry Pi PICO an Circuitpython code
 
 - Need much better LoRa library with, CAD, status detection, and INTERRUPT !!!
 - contact list
-- setup and save configuration
+- ~~setup and save configuration~~
 - save memory to flash
 
 
@@ -27,6 +27,7 @@ New Armachat based on Raspberry Pi PICO an Circuitpython code
 
 - Much more stable
 - Formatting changes in all three files. I'm using the Mu editor, <a href="https://codewith.mu/">https://codewith.mu/</a>, that has Check and Tidy functions to help standardize formatting. The formatting changes are from using those functions in the Mu editor.
+- Configuration values that  are changed may be saved to a config.txt file if the file-system is writable. 
 
 **boot.py**
 
@@ -49,6 +50,18 @@ New Armachat based on Raspberry Pi PICO an Circuitpython code
 
 **config.py**
 
-- No changes other than format
+Now reading and writing to config.txt file to keep settings between reboots
+
+Notes:
+
+- If a new property is added to config.py, it will be written to config.txt if it is one of the types included in config_includeTypes list.
+- A property may be excluded by placing it in the config_excludeNames list.
+
+Limitations
+
+- To save configuration changes, the file-system needs to be changed to writable on boot by pressing the ALT key.
+- If the config.txt file is edited by hand comments are allowed but the whole line must be a comment. Inline comments are not allowed.
+- If a hex, binary. or octal value is in the config.txt file, it will be changed to decimal if the configuration file is saved.
+- Currently only str, int, and float types are supported.
 
 BTW: Save memory to flash does work if you change the file system to write mode by pressing the ALT key when booting and pressing the S key when viewing messages.
