@@ -234,10 +234,10 @@ class LoRa(object):
             self._spi_write(REG_01_OP_MODE, MODE_STDBY)
             self._mode = MODE_STDBY
 
-    def send(self, data, header_to, header_id=0, header_flags=0):
+    def send(self, data):
         self.set_mode_idle()
 
-        header = [header_to, self._this_address, header_id, header_flags]
+        #header = [header_to, self._this_address, header_id, header_flags]
         if type(data) == int:
             data = [data]
         elif type(data) == bytes:
@@ -245,7 +245,7 @@ class LoRa(object):
         elif type(data) == str:
             data = [ord(s) for s in data]
 
-        payload = header + data
+        payload = data
         self._spi_write(REG_0D_FIFO_ADDR_PTR, 0)
         self._spi_write(REG_00_FIFO, payload)
         self._spi_write(REG_22_PAYLOAD_LENGTH, len(payload))
@@ -263,30 +263,6 @@ class LoRa(object):
         self.set_mode_idle()
         return msg_sent
 
-    def send_to_wait(self, data, header_to, header_flags=0, retries=3):
-        self._last_header_id += 1
-
-        for _ in range(retries + 1):
-            self.send(data, header_to, header_id=self._last_header_id, header_flags=header_flags)
-            self.set_mode_rx()
-
-            if header_to == BROADCAST_ADDRESS:  # Don't wait for acks from a broadcast message
-                return True
-
-            start = time.monotonic()
-            while time.monotonic() - start < self.retry_timeout + (self.retry_timeout ):
-                if self._last_payload:
-                    if self._last_payload.header_to == self._this_address and \
-                            self._last_payload.header_flags & FLAGS_ACK and \
-                            self._last_payload.header_id == self._last_header_id:
-
-                        # We got an ACK
-                        return True
-        return False
-
-    def send_ack(self, header_to, header_id):
-        self.send(b'!', header_to, header_id, FLAGS_ACK)
-        self.wait_packet_sent()
 
     def _spi_write(self, register, payload):
         if type(payload) == int:
@@ -343,14 +319,14 @@ class LoRa(object):
 
                 self.last_rssi = rssi
                 self.last_snr = snr
+                message = bytes(packet[0:])
 
-
-                if packet_len >= 4:
-                    header_to = packet[0]
-                    header_from = packet[1]
-                    header_id = packet[2]
-                    header_flags = packet[3]
-                    message = bytes(packet[4:]) if packet_len > 4 else b''
+                #if packet_len >= 4:
+                    #header_to = packet[0]
+                    #header_from = packet[1]
+                    #header_id = packet[2]
+                    #header_flags = packet[3]
+                    #message = bytes(packet[0:]) #if packet_len > 4 else b''
 
                     #if (self._this_address != header_to) and ((header_to != BROADCAST_ADDRESS) or (self._receive_all is False)):
                     #    return
@@ -363,14 +339,14 @@ class LoRa(object):
 
                     #self.set_mode_rx()
 
-                    self.last_msg = message#tuple(
+                    #self.last_msg = message#tuple(
                      #   "Payload",
                      #   ['message', 'header_to', 'header_from', 'header_id', 'header_flags', 'rssi', 'snr']
                     #)(message, header_to, header_from, header_id, header_flags, rssi, snr)
 
                     #if not header_flags & FLAGS_ACK:
                     #    self.on_recv(self._last_payload)
-                break
+                #break
 
             #elif self._mode == MODE_TX and (irq_flags & TX_DONE):
             #    self.set_mode_idle()

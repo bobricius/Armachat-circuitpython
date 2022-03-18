@@ -1,0 +1,13 @@
+Adafruit CircuitPython 7.0.0 on 2021-09-20; Raspberry Pi Pico with rp2040
+Board ID:raspberry_pi_pico
+boot.py output:
+Free memory:
+202336
+USB power connected
+Model: Armachat Compact
+
+Press DEL for SAFE MODE
+Press ALT for WRITE from code
+[--------------- ][--------------  ][-------------   ][------------    ][-----------     ][----------      ][---------       ][--------        ][-------         ][------          ][-----           ][----            ][---             ][--              ][-               ][                ]
+
+Starting code.py...
