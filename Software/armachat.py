@@ -213,7 +213,7 @@ def sendMessage(text):
 
     # random.randint(min, max)
     outp = bytearray(len(text))
-    cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
+    cipher = aesio.AES(config.password, aesio.MODE_CBC, config.passwordIv)
     cipher.encrypt_into(bytes(text, "utf-8"), outp)
     print("Send header:")
     print(hexlify(bytearray(header)))
@@ -312,7 +312,7 @@ def receiveMessage():
             packet_text = "D"
             return packet_text
         # Decrypt
-        cipher = aesio.AES(config.password, aesio.MODE_CTR, config.passwordIv)
+        cipher = aesio.AES(config.password, aesio.MODE_CBC, config.passwordIv)
         inp = bytes(packet[16:])
         outp = bytearray(len(inp))
         cipher.encrypt_into(inp, outp)
