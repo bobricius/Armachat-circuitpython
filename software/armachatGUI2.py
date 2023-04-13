@@ -313,7 +313,7 @@ def countMessages(msgStat=""):
 
 def setStatusBar():
     if GUI==True:
-        text="SF:"+str(spreading_factor)+" "+country+str(int(frequency))+"Mhz B:"+str(batteryInfo())+"%"+"\n"
+        text="SF:"+str(spreading_factor)+" "+country+str(int(frequency))+"Mhz B:"+str(batteryInfo())+"% "
         count=countMessages("|R|")
         text=text+"Rx:"+str(count)
         count=countMessages("|S|")
@@ -674,16 +674,16 @@ if GUI==True:
     
     font = bitmap_font.load_font(font_file)
     terminal_font = terminalio.FONT
-    status_roundrect = RoundRect(40, 0, 158, 22, 4, fill=0x101010, outline=0x00FF00, stroke=1)
-    window_roundrect = RoundRect(0, 55, display.width, 125, 4, fill=0xFFFFFF, outline=0xFF0FFF, stroke=1)
+    status_roundrect = RoundRect(0, 0, 270, 22, 4, fill=0x101010, outline=0x00FF00, stroke=1) #
+    window_roundrect = RoundRect(0, 55, display.width, 125, 4, fill=0xFFFFFF, outline=0xFF0FFF, stroke=1) #text area
     edit_roundrect = RoundRect(0, 23, display.width, 30, 4, fill=0xFFFFFF, outline=0x0F00FF, stroke=1)
-    layout_roundrect = RoundRect(200, 0, 50, 22, 4, fill=0xA0A0A0, outline=0xFF0000, stroke=1)
+    layout_roundrect = RoundRect(270, 0, 50, 22, 4, fill=0xA0A0A0, outline=0xFF0000, stroke=1)
 
     text_window = bitmap_label.Label(font, line_spacing=1, text="#  command\n#h HELP\n _ lowercase\n | symbol\n - uppercase", color=0, x=1, y=67)
     text_edit = bitmap_label.Label(font, line_spacing=1, text="TEXT", color=0, x=2, y=37)
-    text_status = bitmap_label.Label(terminal_font, line_spacing=1, text="Armachat\nMESSENGER", color=0xFFFFFF, x=48, y=5)
-    text_layout = bitmap_label.Label(font, line_spacing=1, text="ABC", color=0x000000, x=205, y=9)
-
+    text_status = bitmap_label.Label(terminal_font, line_spacing=1, text="Armachat MESSENGER", color=0xFFFFFF, x=4, y=11)
+    text_layout = bitmap_label.Label(font, line_spacing=1, text="ABC", color=0x000000, x=275, y=9)
+            
     mygroup.append(window_roundrect)
     mygroup.append(status_roundrect)
     mygroup.append(edit_roundrect)
